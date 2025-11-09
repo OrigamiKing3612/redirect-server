@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -17,7 +18,21 @@ func main() {
 	}
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, location, http.StatusTemporaryRedirect)
+		w.Header().Set("X-Robots-Tag", "noindex, nofollow")
+		w.Header().Set("Cache-Control", "no-store, no-preview")
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+		fmt.Fprintf(w, `<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="refresh" content="0; url='%s'">
+  <title>Redirecting...</title>
+</head>
+<body>
+  <p>Redirecting... If you’re not redirected, <a href="%s">click here</a>.</p>
+  <script>window.location.href = "%s"</script>
+</body>
+</html>`, location, location, location)
 	})
 
 	srv := &http.Server{
